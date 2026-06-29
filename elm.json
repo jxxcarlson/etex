@@ -2,7 +2,7 @@
     "type": "package",
     "name": "jxxcarlson/etex",
     "summary": "TeX macro expansion and transformation for mathematical expressions",
-    "license": "BSD-3-Clause",
+    "license": "MIT",
     "version": "0.1.0",
     "exposed-modules": [
         "ETeX.Transform"
