@@ -59,6 +59,15 @@ suite =
             \_ ->
                 transformETeX Dict.empty "\\badmacro"
                     |> Expect.equal "\\badmacro"
+        , test "row separator \\\\ passes through" <|
+            \_ ->
+                transformETeX Dict.empty "a \\\\ b"
+                    |> Expect.equal "a \\\\ b"
+        , test "pmatrix with row separators does not error" <|
+            \_ ->
+                transformETeX Dict.empty "\\begin{pmatrix} a & 0 \\\\ 0 & b \\end{pmatrix}"
+                    |> String.contains "ETeX error"
+                    |> Expect.equal False
         , test "multi-arg macro: space(3)" <|
             \_ ->
                 transformETeX macroDict "space(3)"

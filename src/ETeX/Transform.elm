@@ -211,7 +211,9 @@ parseManyWithDict userMacroDict str =
         |> List.map String.trim
         |> List.map (parseWithDict userMacroDict)
         |> Result.Extra.combine
-        |> Result.map List.concat
+        -- Restore the newlines consumed by String.lines so multi-line input
+        -- round-trips (e.g. a pmatrix written across several lines).
+        |> Result.map (List.intersperse [ MathSymbols "\n" ] >> List.concat)
 
 
 
@@ -1189,6 +1191,7 @@ type Problem
     | ExpectingRightBracket
     | ExpectingLeftMathBrace
     | ExpectingRightMathBrace
+    | ExpectingLineBreak
     | ExpectingLeftParen
     | ExpectingRightParen
     | ExpectingUnderscore
@@ -1391,6 +1394,7 @@ mathExprParser userMacroDict =
         , mathSpaceParser
         , leftBraceParser
         , rightBraceParser
+        , lineBreakParser -- Must precede macroParser: "\\" is the row separator, not a macro
         , alphaNumWithLookaheadParser userMacroDict -- This handles both function calls and plain alphanums
         , macroParser userMacroDict
         , lazy (\_ -> standaloneParenthExprParser userMacroDict) -- For standalone parentheses
@@ -1475,6 +1479,13 @@ rightBraceParser : PA.Parser c Problem MathExpr
 rightBraceParser =
     succeed RightMathBrace
         |. symbol (Token "\\}" ExpectingRightMathBrace)
+
+
+lineBreakParser : PA.Parser c Problem MathExpr
+lineBreakParser =
+    -- The LaTeX row separator "\\" is passed through as a raw symbol
+    succeed (MathSymbols "\\\\")
+        |. symbol (Token "\\\\" ExpectingLineBreak)
 
 
 
