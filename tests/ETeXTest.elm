@@ -68,6 +68,19 @@ suite =
                 transformETeX Dict.empty "\\begin{pmatrix} a & 0 \\\\ 0 & b \\end{pmatrix}"
                     |> String.contains "ETeX error"
                     |> Expect.equal False
+        , test "numeric superscript followed by period passes through" <|
+            \_ ->
+                transformETeX Dict.empty "x^2."
+                    |> Expect.equal "x^2."
+        , test "numeric subscript followed by period passes through" <|
+            \_ ->
+                transformETeX Dict.empty "a_1."
+                    |> Expect.equal "a_1."
+        , test "formula ending in ^2 plus period does not error" <|
+            \_ ->
+                transformETeX Dict.empty "r^2d\\Omega^2."
+                    |> String.contains "ETeX error"
+                    |> Expect.equal False
         , test "multi-arg macro: space(3)" <|
             \_ ->
                 transformETeX macroDict "space(3)"

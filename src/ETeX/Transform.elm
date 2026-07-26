@@ -1599,7 +1599,24 @@ decoParser userMacroDict =
 
 
 numericDecoParser =
-    PA.int ExpectingInt InvalidNumber |> PA.map DecoI
+    -- Digits only. PA.int is unusable here: on input like "2." it commits to
+    -- parsing a float and fails, killing the whole parse of e.g. "x^2."
+    (succeed String.slice
+        |= getOffset
+        |. chompIf Char.isDigit ExpectingInt
+        |. chompWhile Char.isDigit
+        |= getOffset
+        |= getSource
+    )
+        |> PA.andThen
+            (\digits ->
+                case String.toInt digits of
+                    Just n ->
+                        succeed (DecoI n)
+
+                    Nothing ->
+                        PA.problem InvalidNumber
+            )
 
 
 
