@@ -3,7 +3,7 @@
     "name": "jxxcarlson/etex",
     "summary": "TeX macro expansion and transformation for mathematical expressions",
     "license": "MIT",
-    "version": "1.0.1",
+    "version": "1.0.2",
     "exposed-modules": [
         "ETeX.Transform"
     ],
