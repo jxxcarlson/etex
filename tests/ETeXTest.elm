@@ -81,6 +81,10 @@ suite =
                 transformETeX Dict.empty "r^2d\\Omega^2."
                     |> String.contains "ETeX error"
                     |> Expect.equal False
+        , test "frac with medium space and subscript before period does not error" <|
+            \_ ->
+                transformETeX Dict.empty "\\frac{A\\land B}{A}\\;\\land E_1."
+                    |> Expect.equal "\\frac{A\\land B}{A}\\;\\land E_1."
         , test "multi-arg macro: space(3)" <|
             \_ ->
                 transformETeX macroDict "space(3)"

@@ -1221,10 +1221,90 @@ parseWithDict userMacroDict str =
 
 macroParser : MathMacroDict -> PA.Parser () Problem MathExpr
 macroParser userMacroDict =
-    succeed Macro
+    (succeed identity
         |. symbol (Token "\\" ExpectingBackslash)
         |= alphaNumParser_
-        |= many (argParser userMacroDict)
+    )
+        |> PA.andThen
+            (\name ->
+                if List.member name textModeMacros then
+                    succeed (Macro name) |= many rawArgParser
+
+                else
+                    succeed (Macro name) |= many (argParser userMacroDict)
+            )
+
+
+{-| Commands whose argument is text, not math. Their arguments are kept
+exactly as written: parsing them as math would turn words that happen to be
+symbol names into macros (`\text{There exists}` -> `\text{There \exists}`).
+-}
+textModeMacros : List String
+textModeMacros =
+    [ "text", "textrm", "textbf", "textit", "textsf", "texttt", "textnormal", "textup", "textmd", "textsl", "emph", "mbox", "hbox", "mathrm", "operatorname" ]
+
+
+{-| A `{...}` argument kept verbatim: nested braces are matched, and escaped
+characters (`\{`, `\}`, `\\`) are copied through.
+-}
+rawArgParser : PA.Parser () Problem MathExpr
+rawArgParser =
+    succeed (\raw -> Arg [ MathSymbols raw ])
+        |. symbol (Token "{" ExpectingLeftBrace)
+        |= getChompedString (loop 0 rawArgStep)
+        |. symbol (Token "}" ExpectingRightBrace)
+
+
+{-| ETeX's `text(...)`: a `(...)` argument kept verbatim, nested parentheses
+matched, so `text(exists here)` stays text.
+-}
+rawParenArgParser : PA.Parser () Problem MathExpr
+rawParenArgParser =
+    succeed (\raw -> PArg [ MathSymbols raw ])
+        |. symbol (Token "(" ExpectingLeftParen)
+        |= getChompedString (loop 0 rawParenStep)
+        |. symbol (Token ")" ExpectingRightParen)
+
+
+rawParenStep : Int -> PA.Parser () Problem (Step Int ())
+rawParenStep depth =
+    oneOf
+        [ succeed (Loop depth)
+            |. chompIf (\c -> c == '\\') ExpectingBackslash
+            |. chompIf (\_ -> True) ExpectingAlpha
+        , succeed (Loop (depth + 1))
+            |. chompIf (\c -> c == '(') ExpectingLeftParen
+        , if depth > 0 then
+            succeed (Loop (depth - 1))
+                |. chompIf (\c -> c == ')') ExpectingRightParen
+
+          else
+            PA.problem ExpectingRightParen
+        , succeed (Loop depth)
+            |. chompIf (\c -> c /= '(' && c /= ')' && c /= '\\') ExpectingNotAlpha
+        , succeed (Done ())
+        ]
+
+
+rawArgStep : Int -> PA.Parser () Problem (Step Int ())
+rawArgStep depth =
+    oneOf
+        [ succeed (Loop depth)
+            |. chompIf (\c -> c == '\\') ExpectingBackslash
+            |. chompIf (\_ -> True) ExpectingAlpha
+        , succeed (Loop (depth + 1))
+            |. chompIf (\c -> c == '{') ExpectingLeftBrace
+        , if depth > 0 then
+            succeed (Loop (depth - 1))
+                |. chompIf (\c -> c == '}') ExpectingRightBrace
+
+          else
+            -- The closing brace of the argument: stop before it.
+            PA.problem ExpectingRightBrace
+        , succeed (Loop depth)
+            |. chompIf (\c -> c /= '{' && c /= '}' && c /= '\\') ExpectingNotAlpha
+        , succeed (Done ())
+        ]
 
 
 
@@ -1362,7 +1442,13 @@ alphaNumWithLookaheadParser userMacroDict =
         |> PA.andThen
             (\name ->
                 oneOf
-                    [ -- Check if followed by '(' and parse comma-separated arguments
+                    [ -- text(...) and friends: the argument is text, kept verbatim
+                      if List.member name textModeMacros then
+                        rawParenArgParser |> PA.map (\arg -> Macro name [ arg ])
+
+                      else
+                        PA.problem ExpectingLeftParen
+                    , -- Check if followed by '(' and parse comma-separated arguments
                       functionArgsParser userMacroDict
                         |> PA.map
                             (\args ->
