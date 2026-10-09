@@ -1336,7 +1336,7 @@ functionArgListParser userMacroDict =
                 , leftBraceParser
                 , rightBraceParser
                 , macroParser userMacroDict
-                , alphaNumOrMacroParser userMacroDict -- Check if alphaNum is a macro
+                , lazy (\_ -> alphaNumWithLookaheadParser userMacroDict) -- name, possibly a nested call: frac(x, y)
                 , mathSymbolsParser
                 , lazy (\_ -> argParser userMacroDict)
                 , lazy (\_ -> standaloneParenthExprParser userMacroDict)
@@ -1348,24 +1348,6 @@ functionArgListParser userMacroDict =
                 ]
     in
     sepByComma (PA.map PArg (many1 argContentParser))
-
-
-
--- Parse alpha numeric without lookahead (to avoid recursion)
--- Parse alpha numeric and check if it's a macro (no lookahead for parentheses)
-
-
-alphaNumOrMacroParser : MathMacroDict -> PA.Parser () Problem MathExpr
-alphaNumOrMacroParser userMacroDict =
-    alphaNumParser_
-        |> PA.map
-            (\name ->
-                if isKaTeX name || isUserDefinedMacro userMacroDict name then
-                    Macro name []
-
-                else
-                    AlphaNum name
-            )
 
 
 

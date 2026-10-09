@@ -85,6 +85,18 @@ suite =
             \_ ->
                 transformETeX Dict.empty "\\frac{A\\land B}{A}\\;\\land E_1."
                     |> Expect.equal "\\frac{A\\land B}{A}\\;\\land E_1."
+        , test "function call nested in a function's argument: o(frac(x,log x))" <|
+            \_ ->
+                transformETeX Dict.empty "o(frac(x,log x))"
+                    |> Expect.equal "o(\\frac{x}{\\log x})"
+        , test "macro call nested in a macro's argument: sqrt(frac(x,y))" <|
+            \_ ->
+                transformETeX Dict.empty "sqrt(frac(x,y))"
+                    |> Expect.equal "\\sqrt{\\frac{x}{y}}"
+        , test "nested calls in several arguments: f(sin x, cos(y))" <|
+            \_ ->
+                transformETeX Dict.empty "f(sin x, cos(y))"
+                    |> Expect.equal "f(\\sin x, \\cos{y})"
         , test "multi-arg macro: space(3)" <|
             \_ ->
                 transformETeX macroDict "space(3)"
