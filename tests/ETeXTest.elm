@@ -97,6 +97,38 @@ suite =
             \_ ->
                 transformETeX Dict.empty "f(sin x, cos(y))"
                     |> Expect.equal "f(\\sin x, \\cos{y})"
+        , test "ldots: a_1, ldots, a_n" <|
+            \_ ->
+                transformETeX Dict.empty "a_1, ldots, a_n"
+                    |> Expect.equal "a_1, \\ldots, a_n"
+        , test "cdots: a_1 + cdots + a_n" <|
+            \_ ->
+                transformETeX Dict.empty "a_1 + cdots + a_n"
+                    |> Expect.equal "a_1 + \\cdots + a_n"
+        , test "vdots, ddots and dots" <|
+            \_ ->
+                transformETeX Dict.empty "vdots ddots dots"
+                    |> Expect.equal "\\vdots \\ddots \\dots"
+        , test "negated relation: nleq" <|
+            \_ ->
+                transformETeX Dict.empty "a nleq b"
+                    |> Expect.equal "a \\nleq b"
+        , test "extensible arrow with an argument: xrightarrow(f)" <|
+            \_ ->
+                transformETeX Dict.empty "A xrightarrow(f) B"
+                    |> Expect.equal "A \\xrightarrow{f} B"
+        , test "operator name: argmax" <|
+            \_ ->
+                transformETeX Dict.empty "argmax_x f(x)"
+                    |> Expect.equal "\\argmax_x f(x)"
+        , test "names KaTeX lacks are left as words: sech x" <|
+            \_ ->
+                transformETeX Dict.empty "sech x"
+                    |> Expect.equal "sech x"
+        , test "single letters stay letters: P(A) and R^n" <|
+            \_ ->
+                transformETeX Dict.empty "P(A) + R^n"
+                    |> Expect.equal "P(A) + R^n"
         , test "multi-arg macro: space(3)" <|
             \_ ->
                 transformETeX macroDict "space(3)"

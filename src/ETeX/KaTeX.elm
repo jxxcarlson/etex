@@ -16,9 +16,12 @@ isKaTeX command =
     logic and set theory symbols, miscellaneous symbols, fractions,
     binomials, roots, and text operators as defined in the KaTeX documentation.
 
-    513 commands
+    736 commands, all checked against KaTeX 0.16.9
 
-    TODO: ldots, ellipsis, and other common symbols that are not included.
+    Left out on purpose, although KaTeX has them: names that are ordinary
+    letters or words (P, R, S, it, set, real, empty, ...), delimiter sizes
+    (left, right, big, ...), colors, font sizes, TeX primitives and HTML
+    extensions. They still work when written with a backslash.
 
 -}
 katexCommands : Set String
@@ -40,6 +43,14 @@ katexCommands =
             , fractions
             , binomials
             , roots
+            , dots
+            , moreGreekLetters
+            , moreSymbols
+            , colons
+            , extensibleArrows
+            , moreFunctions
+            , layout
+            , braKet
             , textOperators
             ]
         )
@@ -250,7 +261,6 @@ relationSymbols =
     , "approxcolon"
     , "colonapprox"
     , "colonsim"
-    , "Colon"
     , "ratio"
     ]
 
@@ -378,7 +388,6 @@ bigOperators =
     , "oint"
     , "iint"
     , "iiint"
-    , "iiiint"
     , "intop"
     , "smallint"
     ]
@@ -400,8 +409,6 @@ mathFunctions =
     , "cosh"
     , "tanh"
     , "coth"
-    , "sech"
-    , "csch"
     , "arcsin"
     , "arccos"
     , "arctan"
@@ -425,7 +432,6 @@ mathFunctions =
     , "inf"
     , "Pr"
     , "gcd"
-    , "lcm"
     , "arg"
     , "mod"
     , "bmod"
@@ -466,9 +472,6 @@ accents =
     , "undergroup"
     , "overbrace"
     , "underbrace"
-    , "overparen"
-    , "underparen"
-    , "overrightleftharpoons"
     , "boxed"
     , "underlinesegment"
     , "overlinesegment"
@@ -491,7 +494,6 @@ fonts =
     , "mathcal"
     , "cal"
     , "mathscr"
-    , "scr"
     , "mathfrak"
     , "frak"
     , "mathsf"
@@ -525,7 +527,6 @@ spacing =
     , "medspace"
     , "thickspace"
     , "enspace"
-    , "negspace"
     , "negmedspace"
     , "negthickspace"
     , "negthinspace"
@@ -539,7 +540,6 @@ spacing =
     , "hphantom"
     , "vphantom"
     , "mathstrut"
-    , "strut"
     , "!"
     , ":"
     , ";"
@@ -561,9 +561,6 @@ logicAndSetTheory =
     , "supset"
     , "mid"
     , "nmid"
-    , "notsubset"
-    , "nsubset"
-    , "nsupset"
     , "nsupseteq"
     , "nsubseteq"
     , "subsetneq"
@@ -577,7 +574,6 @@ logicAndSetTheory =
     , "isin"
     , "notin"
     , "notni"
-    , "niton"
     , "in"
     , "ni"
     , "emptyset"
@@ -653,8 +649,6 @@ miscSymbols =
     , "circledR"
     , "pounds"
     , "yen"
-    , "euro"
-    , "cent"
     , "maltese"
     ]
 
@@ -697,7 +691,321 @@ binomials =
 roots : List String
 roots =
     [ "sqrt"
-    , "sqrtsign"
+    ]
+
+
+
+-- Dots (\dotsb ... \dotso are amsmath's semantic dots)
+
+
+dots : List String
+dots =
+    [ "ldots"
+    , "cdots"
+    , "vdots"
+    , "ddots"
+    , "dots"
+    , "dotsb"
+    , "dotsc"
+    , "dotsi"
+    , "dotsm"
+    , "dotso"
+    ]
+
+
+
+-- Capital Greek letters that look like Latin ones (KaTeX extension)
+
+
+moreGreekLetters : List String
+moreGreekLetters =
+    [ "Alpha"
+    , "Beta"
+    , "Chi"
+    , "Epsilon"
+    , "Eta"
+    , "Iota"
+    , "Kappa"
+    , "Mu"
+    , "Nu"
+    , "Omicron"
+    , "Rho"
+    , "Tau"
+    , "Zeta"
+    , "omicron"
+    ]
+
+
+-- More relations, negated relations, arrows and symbols (amssymb, stmaryrd)
+
+
+moreSymbols : List String
+moreSymbols =
+    [ "Cap"
+    , "Cup"
+    , "Doteq"
+    , "Lsh"
+    , "Rsh"
+    , "Subset"
+    , "Supset"
+    , "Vdash"
+    , "Vvdash"
+    , "asymp"
+    , "backepsilon"
+    , "backslash"
+    , "barwedge"
+    , "bigcirc"
+    , "bowtie"
+    , "centerdot"
+    , "circledS"
+    , "circledast"
+    , "circledcirc"
+    , "circleddash"
+    , "dArr"
+    , "dashv"
+    , "diamond"
+    , "doublecap"
+    , "doublecup"
+    , "downdownarrows"
+    , "downharpoonleft"
+    , "downharpoonright"
+    , "eqsim"
+    , "eqslantgtr"
+    , "eqslantless"
+    , "geqq"
+    , "geqslant"
+    , "ggg"
+    , "gggtr"
+    , "gnapprox"
+    , "gneq"
+    , "gneqq"
+    , "gnsim"
+    , "gtrapprox"
+    , "gtrdot"
+    , "gtreqless"
+    , "gtreqqless"
+    , "gtrless"
+    , "gtrsim"
+    , "gvertneqq"
+    , "imath"
+    , "intercal"
+    , "jmath"
+    , "leftrightharpoons"
+    , "leqq"
+    , "leqslant"
+    , "lessapprox"
+    , "lessdot"
+    , "lesseqgtr"
+    , "lesseqqgtr"
+    , "lessgtr"
+    , "lesssim"
+    , "llbracket"
+    , "lll"
+    , "llless"
+    , "lnapprox"
+    , "lneq"
+    , "lneqq"
+    , "lnsim"
+    , "ltimes"
+    , "lvertneqq"
+    , "mathsterling"
+    , "mho"
+    , "minuso"
+    , "models"
+    , "nLeftarrow"
+    , "nLeftrightarrow"
+    , "nRightarrow"
+    , "nVDash"
+    , "nVdash"
+    , "ncong"
+    , "ngeq"
+    , "ngeqq"
+    , "ngeqslant"
+    , "ngtr"
+    , "nleftarrow"
+    , "nleftrightarrow"
+    , "nleq"
+    , "nleqq"
+    , "nleqslant"
+    , "nless"
+    , "nprec"
+    , "npreceq"
+    , "nrightarrow"
+    , "nshortmid"
+    , "nshortparallel"
+    , "nsim"
+    , "nsubseteqq"
+    , "nsucc"
+    , "nsucceq"
+    , "nsupseteqq"
+    , "ntriangleleft"
+    , "ntrianglelefteq"
+    , "ntriangleright"
+    , "ntrianglerighteq"
+    , "nvDash"
+    , "nvdash"
+    , "oiiint"
+    , "oiint"
+    , "precnapprox"
+    , "precneqq"
+    , "precnsim"
+    , "rrbracket"
+    , "rtimes"
+    , "smallfrown"
+    , "smallsmile"
+    , "subseteqq"
+    , "succnapprox"
+    , "succneqq"
+    , "succnsim"
+    , "supseteqq"
+    , "uArr"
+    , "upharpoonleft"
+    , "upharpoonright"
+    , "upuparrows"
+    , "vDash"
+    , "vartriangle"
+    , "varvdots"
+    , "vdash"
+    , "veebar"
+    , "wr"
+    ]
+
+
+-- Colon relations (mathtools / colonequals)
+
+
+colons : List String
+colons =
+    [ "Colonapprox"
+    , "Coloneq"
+    , "Coloneqq"
+    , "Colonsim"
+    , "Eqcolon"
+    , "Eqqcolon"
+    , "approxcoloncolon"
+    , "colon"
+    , "coloncolon"
+    , "coloncolonapprox"
+    , "coloncolonequals"
+    , "coloncolonminus"
+    , "coloncolonsim"
+    , "coloneqq"
+    , "colonequals"
+    , "colonminus"
+    , "dblcolon"
+    , "eqqcolon"
+    , "equalscolon"
+    , "equalscoloncolon"
+    , "minuscolon"
+    , "minuscoloncolon"
+    , "ordinarycolon"
+    , "simcoloncolon"
+    , "vcentcolon"
+    ]
+
+
+-- Extensible arrows and accents (mathtools)
+
+
+extensibleArrows : List String
+extensibleArrows =
+    [ "Overrightarrow"
+    , "overleftharpoon"
+    , "overrightharpoon"
+    , "underbar"
+    , "utilde"
+    , "xLeftarrow"
+    , "xLeftrightarrow"
+    , "xRightarrow"
+    , "xhookleftarrow"
+    , "xhookrightarrow"
+    , "xleftarrow"
+    , "xleftequilibrium"
+    , "xleftharpoondown"
+    , "xleftharpoonup"
+    , "xleftrightarrow"
+    , "xleftrightharpoons"
+    , "xlongequal"
+    , "xmapsto"
+    , "xrightarrow"
+    , "xrightequilibrium"
+    , "xrightharpoondown"
+    , "xrightharpoonup"
+    , "xrightleftarrows"
+    , "xrightleftharpoons"
+    , "xtofrom"
+    , "xtwoheadleftarrow"
+    , "xtwoheadrightarrow"
+    ]
+
+
+-- More operator names
+
+
+moreFunctions : List String
+moreFunctions =
+    [ "argmax"
+    , "argmin"
+    , "cosec"
+    , "cotg"
+    , "ctg"
+    , "cth"
+    , "injlim"
+    , "operatornamewithlimits"
+    , "plim"
+    , "projlim"
+    , "varinjlim"
+    , "varliminf"
+    , "varlimsup"
+    , "varprojlim"
+    ]
+
+
+-- Layout, styles and math classes
+
+
+layout : List String
+layout =
+    [ "bm"
+    , "clap"
+    , "displaystyle"
+    , "hdashline"
+    , "hline"
+    , "llap"
+    , "mathbin"
+    , "mathclap"
+    , "mathclose"
+    , "mathinner"
+    , "mathllap"
+    , "mathop"
+    , "mathopen"
+    , "mathord"
+    , "mathpunct"
+    , "mathrel"
+    , "mathrlap"
+    , "nonumber"
+    , "notag"
+    , "rlap"
+    , "scriptscriptstyle"
+    , "scriptstyle"
+    , "smash"
+    , "tag"
+    , "textstyle"
+    ]
+
+
+-- Bra-ket notation (braket package)
+
+
+braKet : List String
+braKet =
+    [ "Bra"
+    , "Braket"
+    , "Ket"
+    , "Set"
+    , "bra"
+    , "braket"
+    , "ket"
     ]
 
 
@@ -711,7 +1019,6 @@ textOperators =
     , "cancel"
     , "bcancel"
     , "xcancel"
-    , "cancelto"
     , "sout"
     , "overline"
     , "underline"
@@ -720,5 +1027,4 @@ textOperators =
     , "stackrel"
     , "atop"
     , "substack"
-    , "sideset"
     ]
