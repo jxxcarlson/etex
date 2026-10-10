@@ -129,6 +129,22 @@ suite =
             \_ ->
                 transformETeX Dict.empty "P(A) + R^n"
                     |> Expect.equal "P(A) + R^n"
+        , test "double bar: O(\\|\\delta\\|^4)" <|
+            \_ ->
+                transformETeX Dict.empty "O(\\|\\delta\\|^4)"
+                    |> Expect.equal "O(\\|\\delta\\|^4)"
+        , test "single-character escapes pass through: \\! \\: \\> \\# \\& \\_" <|
+            \_ ->
+                transformETeX Dict.empty "a\\!b\\:c\\>d\\#e\\&f\\_g"
+                    |> Expect.equal "a\\!b\\:c\\>d\\#e\\&f\\_g"
+        , test "second-order expansion with norms (user report)" <|
+            \_ ->
+                let
+                    src =
+                        "\\frac12\\left[\nf(x;\\bar\\theta+\\delta)+f(x;\\bar\\theta-\\delta)\n\\right]\n=\nf(x;\\bar\\theta)\n+\\frac12\\delta^T H_f(x;\\bar\\theta)\\delta\n+O(\\|\\delta\\|^4),"
+                in
+                transformETeX Dict.empty src
+                    |> Expect.equal src
         , test "multi-arg macro: space(3)" <|
             \_ ->
                 transformETeX macroDict "space(3)"

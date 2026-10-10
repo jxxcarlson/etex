@@ -1335,6 +1335,7 @@ functionArgListParser userMacroDict =
                 , mathSpaceParser
                 , leftBraceParser
                 , rightBraceParser
+                , escapedSymbolParser
                 , macroParser userMacroDict
                 , lazy (\_ -> alphaNumWithLookaheadParser userMacroDict) -- name, possibly a nested call: frac(x, y)
                 , mathSymbolsParser
@@ -1464,6 +1465,7 @@ mathExprParser userMacroDict =
         , rightBraceParser
         , lineBreakParser -- Must precede macroParser: "\\" is the row separator, not a macro
         , alphaNumWithLookaheadParser userMacroDict -- This handles both function calls and plain alphanums
+        , escapedSymbolParser -- \| \! \: \# ...; must precede macroParser
         , macroParser userMacroDict
         , lazy (\_ -> standaloneParenthExprParser userMacroDict) -- For standalone parentheses
         , commaParser
@@ -1554,6 +1556,22 @@ lineBreakParser =
     -- The LaTeX row separator "\\" is passed through as a raw symbol
     succeed (MathSymbols "\\\\")
         |. symbol (Token "\\\\" ExpectingLineBreak)
+
+
+
+{-| A backslash followed by one character that is not a letter or digit:
+`\|` (double bar), `\!` `\:` `\>` (spacing), `\#` `\$` `\%` `\&` `\_`, ...
+Passed through unchanged. Must come after the parsers for the escapes that
+ETeX treats specially (`\\`, `\{`, `\}`, `\,`, `\;`, `\ `) and before
+`macroParser`, which commits once it has read the backslash. Backtrackable,
+so `\alpha` falls through to `macroParser`.
+-}
+escapedSymbolParser : PA.Parser c Problem MathExpr
+escapedSymbolParser =
+    backtrackable <|
+        succeed (\c -> MathSymbols ("\\" ++ c))
+            |. symbol (Token "\\" ExpectingBackslash)
+            |= getChompedString (chompIf (\c -> not (Char.isAlphaNum c)) ExpectingNotAlpha)
 
 
 
