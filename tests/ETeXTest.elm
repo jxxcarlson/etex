@@ -145,6 +145,23 @@ suite =
                 in
                 transformETeX Dict.empty src
                     |> Expect.equal src
+        , test "half-open intervals are kept whole: x in [0,1) cup (2,3]" <|
+            \_ ->
+                transformETeX Dict.empty "x in [0,1) cup (2,3]"
+                    |> Expect.equal "x \\in [0,1) \\cup (2,3]"
+        , test "an unclosed parenthesis is a symbol: f(x" <|
+            \_ ->
+                transformETeX Dict.empty "f(x"
+                    |> Expect.equal "f(x"
+        , test "text after an unparsable character is not dropped: a}b" <|
+            \_ ->
+                transformETeX Dict.empty "a}b"
+                    |> String.contains "a}b"
+                    |> Expect.equal True
+        , test "many unclosed parentheses parse quickly" <|
+            \_ ->
+                transformETeX Dict.empty (String.repeat 40 "f((" ++ "x")
+                    |> Expect.equal (String.repeat 40 "f((" ++ "x")
         , test "multi-arg macro: space(3)" <|
             \_ ->
                 transformETeX macroDict "space(3)"

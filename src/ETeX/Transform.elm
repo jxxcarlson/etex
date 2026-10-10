@@ -1204,6 +1204,7 @@ type Problem
     | ExpectingComma
     | ExpectingQuote
     | ExpectingGreekLetter
+    | ExpectingEnd
 
 
 type alias MathExprParser a =
@@ -1214,9 +1215,23 @@ type alias MathExprParser a =
 -- PARSER
 
 
+{-| The whole input must parse: anything left over is an error (the caller
+falls back to the source) rather than being dropped. At the top level an
+unmatched parenthesis is an ordinary symbol, as in TeX: `[0,1)`, `(2,3]`.
+-}
 parseWithDict : MathMacroDict -> String -> Result (List (DeadEnd () Problem)) (List MathExpr)
 parseWithDict userMacroDict str =
-    PA.run (many (mathExprParser userMacroDict)) str
+    PA.run
+        (many
+            (oneOf
+                [ mathExprParser userMacroDict
+                , succeed (MathSymbols ")") |. symbol (Token ")" ExpectingRightParen)
+                , succeed (MathSymbols "(") |. symbol (Token "(" ExpectingLeftParen)
+                ]
+            )
+            |. PA.end ExpectingEnd
+        )
+        str
 
 
 macroParser : MathMacroDict -> PA.Parser () Problem MathExpr
@@ -1432,7 +1447,10 @@ alphaNumWithLookaheadParser userMacroDict =
                       else
                         PA.problem ExpectingLeftParen
                     , -- Check if followed by '(' and parse comma-separated arguments
-                      functionArgsParser userMacroDict
+                      -- (only when the '(' is closed; otherwise it is just a symbol)
+                      succeed identity
+                        |. closedParen
+                        |= functionArgsParser userMacroDict
                         |> PA.map
                             (\args ->
                                 if isKaTeX name || isUserDefinedMacro userMacroDict name then
@@ -1467,7 +1485,7 @@ mathExprParser userMacroDict =
         , alphaNumWithLookaheadParser userMacroDict -- This handles both function calls and plain alphanums
         , escapedSymbolParser -- \| \! \: \# ...; must precede macroParser
         , macroParser userMacroDict
-        , lazy (\_ -> standaloneParenthExprParser userMacroDict) -- For standalone parentheses
+        , succeed identity |. closedParen |= lazy (\_ -> standaloneParenthExprParser userMacroDict) -- For standalone parentheses; an unclosed '(' is just a symbol
         , commaParser
         , mathSymbolsParser
         , lazy (\_ -> argParser userMacroDict)
@@ -1617,6 +1635,53 @@ argParser userMacroDict =
 
 
 -- Removed unused parsers: parentheticalExprParser and parentheticalExprParserM
+
+
+{-| Succeeds, consuming nothing, when the next character is a `(` that has a
+matching `)` later on. Lets an unclosed `(` fall through to be a symbol
+without backtracking (which is exponential in the number of unclosed
+parentheses).
+-}
+closedParen : PA.Parser c Problem ()
+closedParen =
+    succeed (\offset source -> hasMatchingParen 0 (String.toList (String.dropLeft offset source)))
+        |= getOffset
+        |= getSource
+        |> PA.andThen
+            (\closed ->
+                if closed then
+                    succeed ()
+
+                else
+                    PA.problem ExpectingRightParen
+            )
+
+
+hasMatchingParen : Int -> List Char -> Bool
+hasMatchingParen depth chars =
+    case chars of
+        '\\' :: _ :: rest ->
+            hasMatchingParen depth rest
+
+        '(' :: rest ->
+            hasMatchingParen (depth + 1) rest
+
+        ')' :: rest ->
+            if depth <= 1 then
+                depth == 1
+
+            else
+                hasMatchingParen (depth - 1) rest
+
+        _ :: rest ->
+            if depth == 0 then
+                False
+
+            else
+                hasMatchingParen depth rest
+
+        [] ->
+            False
 
 
 standaloneParenthExprParser : MathMacroDict -> PA.Parser () Problem MathExpr
