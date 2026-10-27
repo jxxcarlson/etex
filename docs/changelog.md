@@ -1,6 +1,6 @@
 # Changelog
 
-## 1.1.0 — unreleased (branch `merge-compiler-etex`)
+## 1.1.0 — 2026-10-27
 
 Merges the ETeX code that had grown separately inside the Scripta compiler
 (`scripta-compiler-v3/src/ETeX`) back into this package, so the compiler can depend on it.
