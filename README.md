@@ -24,3 +24,20 @@ definitions look like this:
 ```
 
 Then one can say `$braket(a,b)$` to obtain (roughly) < a | b >
+## Functions
+
+All functions are in `ETeX.Transform`.
+
+- `transformETeX macros source` — ETeX to TeX for export. Calls to user-defined macros stay
+  as macro calls; `toLaTeXNewCommands` gives the matching `\newcommand`s for the preamble.
+- `evalStr macros source` — ETeX to TeX for display (e.g. KaTeX): user-defined macros are
+  expanded in place.
+- `makeMacroDict definitions` — build the macro dictionary from definitions like the ones
+  above, or `\newcommand` lines.
+- `toLaTeXNewCommands definitions` — the same definitions as LaTeX `\newcommand`s.
+- `reduceLet source` — expand a `LET ... IN` block of single-letter definitions
+  (`transformETeX` and `evalStr` already do this).
+- `inverseTransformETeX macros source` — partial inverse: TeX back to ETeX notation.
+
+Input that cannot be parsed comes back with an `[ETeX error]` marker in front, so the problem
+is visible instead of part of the formula being dropped.
